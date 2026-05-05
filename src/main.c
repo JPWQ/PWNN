@@ -14,7 +14,7 @@ Layer createLayer(int prevSize, int curSize, bool inputLayer) {
 
   // Intialize the output array of the current layer.
   // This will be overwritten by the Compute Layer function.
-  float* outputArr = malloc(sizeof(float) * prevSize);
+  float* outputArr = malloc(sizeof(float) * curSize);
   
   // For each neuron in the next/current layer initialize
   // each element of output array is a random number greater than 0 if the curLayer is not an input layer
@@ -25,17 +25,15 @@ Layer createLayer(int prevSize, int curSize, bool inputLayer) {
   // the ith pointer to a random number greater than 0
   for(int i = 0; i < curSize; i++) {
     if(!inputLayer) {
-      outputArr[i] = rand() + 1;
+      outputArr[i] = (((float)rand() / RAND_MAX) * 50.0f - 25.0f);
     }
 
-    if(prevSize > 0) {
-      weightsArr[i] = malloc(sizeof(float) * prevSize);
-    }
+    weightsArr[i] = (float*)malloc(sizeof(float) * prevSize);
 
-    biasArr[i] = rand() + 1;
+    biasArr[i] = (((float)rand() / RAND_MAX) * 50.0f - 25.0f);
 
     for(int j = 0; j < prevSize; j++) {
-      weightsArr[i][j] = rand() + 1;
+      weightsArr[i][j] = (((float)rand() / RAND_MAX) * 50.0f - 25.0f);
     }
   }
 
@@ -48,7 +46,7 @@ void computeLayer(Layer* prevLayer, Layer* curLayer, bool inputLayer) {
   // If previous layer pointer is null then the current layer is the input layer
   if (inputLayer) {
     for(int i = 0; i < curLayer->curSize; i++) {
-      curLayer->output[i] = rand() + 1;
+      curLayer->output[i] = (((float)rand() / RAND_MAX));
     }
     return;
   }
@@ -59,8 +57,8 @@ void computeLayer(Layer* prevLayer, Layer* curLayer, bool inputLayer) {
   // the weights matrix uses the row vector convention
 
   // Then using the sigmoid activation function apply it to each output in the output vector
-  float* result = matrixMult(prevLayer->weights, prevLayer->output, curLayer->curSize, prevLayer->curSize);
-  for(int i = 0; i < curLayer->curSize; i++) {
+  float* result = matrixMult(prevLayer->weights, prevLayer->output, prevLayer->curSize, curLayer->curSize);
+  for(int i = 0; i < prevLayer->curSize; i++) {
     result[i] += prevLayer->bias[i];
     result[i] = sigmoidf(result[i]);
   }
@@ -77,21 +75,22 @@ void freeL(Layer layer) {
 }
 
 Layer* createNeuralNetwork(int numLayers, ...) {
-  Layer* neuralNetwork = malloc(sizeof(Layer) * numLayers);
+  Layer** neuralNetwork = malloc(sizeof(Layer*));
+  neuralNetwork[0] = malloc(sizeof(Layer) * numLayers);
 
   va_list args;
   va_start(args, numLayers);
 
   for(int i = 0; i < numLayers; i++) {
-    neuralNetwork[i] = va_arg(args, Layer);
+    neuralNetwork[0][i] = va_arg(args, Layer);
   }
 
   for(int i = 1; i < numLayers; i++) {
-    computeLayer(&neuralNetwork[i - 1], &neuralNetwork[i], neuralNetwork[i].inputLayer);
+    computeLayer(&neuralNetwork[0][i - 1], &neuralNetwork[0][i], neuralNetwork[0][i].inputLayer);
   }
 
   va_end(args);
-  return neuralNetwork;
+  return *neuralNetwork;
 }
 
 int main() {
@@ -103,5 +102,7 @@ int main() {
     createLayer(10, 5, false)
   );
 
-  printf("%f\n", neuralNetwork[2].output[0]);
+    for(int i = 0; i < 5; i++) {
+      printf("%f\n", neuralNetwork[2].output[i]);
+    }
 }
