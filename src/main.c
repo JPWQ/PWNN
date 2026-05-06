@@ -95,14 +95,34 @@ Layer* createNeuralNetwork(int numLayers, ...) {
 
 int main() {
 
-  Layer* neuralNetwork = createNeuralNetwork(
-    3, 
-    createLayer(1, 5, true),
-    createLayer(5, 10, false),
-    createLayer(10, 5, false)
-  );
+  // Layer* neuralNetwork = createNeuralNetwork(
+  //   3, 
+  //   createLayer(1, 5, true),
+  //   createLayer(5, 10, false),
+  //   createLayer(10, 5, false)
+  // );
 
     for(int i = 0; i < 5; i++) {
-      printf("%f\n", neuralNetwork[2].output[i]);
+      // printf("%f\n", neuralNetwork[2].output[i]);
     }
+  float testMatrix[2][3] = {{1.0f, 2.0f, 3.0f}, {4.0f, 5.0f, 6.0f}};
+  float testVector[3] = {7.0f, 8.0f, 9.0f};
+  float* testOutput;
+
+  float** matrix = malloc(sizeof(float*) * 2);
+  float* vector = malloc(sizeof(float) * 3);
+  for(int i = 0; i < 2; i++) {
+    matrix[i] = malloc(sizeof(float) * 3);
+    for(int j = 0; j < 3; j++) {
+      matrix[i][j] = testMatrix[i][j];
+      vector[j] = testVector[j];
+    }
+  }
+
+  // printf("%f", testMatrix[1][1]);
+  testOutput = matrixMult(matrix, vector, 2, 3);
+  for(int i = 0; i < 3; i++) {
+    printf("%f\n", testOutput[i]);
+    printf("Test: %f\n", vector[i]);
+  }
 }
