@@ -13,5 +13,6 @@ typedef struct layer_t {
 
 Layer createLayer(int curSize, int nextSize, bool inputLayer);
 void computeLayer(Layer* prevLayer, Layer* curLayer);
+void freeNN(int numLayers, Layer* neuralNetwork);
 Layer* createNeuralNetwork(int numLayers, ...);
 int main();

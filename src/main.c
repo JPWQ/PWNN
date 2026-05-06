@@ -61,13 +61,16 @@ void computeLayer(Layer* prevLayer, Layer* curLayer) {
   curLayer->output = result;
 }
 
-void freeL(Layer layer) {
-  for(int i = 0; i < layer.curSize; i++) {
-    free(layer.weights[i]);
+void freeNN(int numLayers, Layer* neuralNetwork) {
+  for(int i = 0; i < numLayers; i++) {
+    for(int j = 0; j < neuralNetwork[i].curSize; j++) {
+      free(neuralNetwork[i].weights[j]);
+    }
+    free(neuralNetwork[i].weights);
+    free(neuralNetwork[i].bias);
+    free(neuralNetwork[i].output);
   }
-  free(layer.weights);
-  free(layer.bias);
-  free(layer.output);
+  free(neuralNetwork);
 }
 
 Layer* createNeuralNetwork(int numLayers, ...) {
@@ -97,7 +100,9 @@ int main() {
     createLayer(10, 5, false)
   );
 
-    for(int i = 0; i < 5; i++) {
-      printf("%f\n", neuralNetwork[2].output[i]);
-    }
+  for(int i = 0; i < 5; i++) {
+    printf("%f\n", neuralNetwork[2].output[i]);
+  }
+
+  freeNN(3, neuralNetwork);
 }
