@@ -12,13 +12,13 @@ float sigmoidf(float n) {
   return (1 / (1 + exp(-n)));
 }
 
-float* matrixMult(float** weightsMatrix, float* outputVector, int rows, int cols) {
-  // weights matrix should be rows x cols and output vector should be cols x 1
+float* matrixMult(float** weightsMatrix, float* inputVector, int rows, int cols) {
+  // weights matrix should be rows x cols and input vector should be cols x 1
   float* output = malloc(sizeof(float) * rows);
   for(int i = 0; i < rows; i++) {
     float result = 0;
     for(int j = 0; j < cols; j++) {
-      result += weightsMatrix[i][j] * outputVector[j];
+      result += weightsMatrix[i][j] * inputVector[j];
     }
     output[i] = result;
   }

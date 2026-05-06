@@ -9,10 +9,9 @@ typedef struct layer_t {
   float* bias;
   float* output;
   int curSize;
-  bool inputLayer;
 } Layer;
 
 Layer createLayer(int curSize, int nextSize, bool inputLayer);
-void computeLayer(Layer* prevLayer, Layer* curLayer, bool inputLayer);
+void computeLayer(Layer* prevLayer, Layer* curLayer);
 Layer* createNeuralNetwork(int numLayers, ...);
 int main();
