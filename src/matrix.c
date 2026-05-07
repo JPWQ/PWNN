@@ -9,7 +9,11 @@ float dotProduct(float* u, float* v, int n) {
 }
 
 float sigmoidf(float n) {
-  return (1 / (1 + exp(-n)));
+  return (1.0f / (1.0f + exp(-n)));
+}
+
+float dsigmoidf(float n) {
+  return (n * (1.0f - n));
 }
 
 float* matrixMult(float** weightsMatrix, float* inputVector, int rows, int cols) {

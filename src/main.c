@@ -1,108 +1,48 @@
 #include "main.h"
 
-Layer createLayer(int prevSize, int curSize, bool inputLayer) {
-  // float weightsArr[curSize][prevSize];
-
-  // The weights 2d array takes n float pointers where n is the number of neurons in the next/current layer.
-  float** weightsArr = (float**)malloc(sizeof(float*) * curSize);
-
-  // Each neruon has it's own bias so it must be a 1d array
-  // taking the size of the number of neurons in the next/current layer.
-  // I chose this because after forward and backward propagation each neruon
-  // should be better optimized.
-  // Bias array is a column vector
-  float* biasArr = malloc(sizeof(float) * curSize);
-
-  // Intialize the output array of the current layer.
-  // This will be overwritten by the Compute Layer function.
-  // Output array is a column vector
-  float* outputArr = malloc(sizeof(float) * curSize);
-  
-  // For each neuron in the next/current layer initialize
-  // each element of output array is a random number greater than 0 if the curLayer is not an input layer
-  // each element of the weights array is a float pointer of size of the previous layer
-  // each element of the biass array is a random number greater than 0
-
-  for(int i = 0; i < curSize; i++) {
-    // If the current layer is the input layer assign values to it's output array.
-    // This is neccessary because when computeLayer() is called in createNeuralNetwork()
-    // it skips the first array because there is no previous layer for the input layer.
-    if(inputLayer) {
-      outputArr[i] = ((float)rand() / RAND_MAX);
-    }
-    weightsArr[i] = (float*)malloc(sizeof(float) * prevSize);
-
-    biasArr[i] = (((float)rand() / RAND_MAX) * 50.0f - 25.0f);
-
-    // For each neuron in the previous layer initialize
-    // the ith pointer to a random number greater than 0
-    for(int j = 0; j < prevSize; j++) {
-      weightsArr[i][j] = (((float)rand() / RAND_MAX) * 50.0f - 25.0f);
-    }
-  }
-
-  Layer newLayer = {weightsArr, biasArr, outputArr, curSize};
-  return newLayer;
-}
-
-// Using the weights and bias from the previous layer compute the output of the current layer
-void computeLayer(Layer* prevLayer, Layer* curLayer) {
-  // Using the formula Z = W*A + B
-
-  // Taking the transpose is unnecessary because
-  // the weights matrix uses the row vector convention
-
-  // Then using the sigmoid activation function apply it to each output in the output vector
-  float* result = matrixMult(prevLayer->weights, prevLayer->output, prevLayer->curSize, curLayer->curSize);
-  for(int i = 0; i < prevLayer->curSize; i++) {
-    result[i] += prevLayer->bias[i];
-    result[i] = sigmoidf(result[i]);
-  }
-  curLayer->output = result;
-}
-
-void freeNN(int numLayers, Layer* neuralNetwork) {
-  for(int i = 0; i < numLayers; i++) {
-    for(int j = 0; j < neuralNetwork[i].curSize; j++) {
-      free(neuralNetwork[i].weights[j]);
-    }
-    free(neuralNetwork[i].weights);
-    free(neuralNetwork[i].bias);
-    free(neuralNetwork[i].output);
-  }
-  free(neuralNetwork);
-}
-
-Layer* createNeuralNetwork(int numLayers, ...) {
-  Layer* neuralNetwork = malloc(sizeof(Layer) * numLayers);
-
-  va_list args;
-  va_start(args, numLayers);
-
-  for(int i = 0; i < numLayers; i++) {
-    neuralNetwork[i] = va_arg(args, Layer);
-  }
-
-  for(int i = 1; i < numLayers; i++) {
-    computeLayer(&neuralNetwork[i - 1], &neuralNetwork[i]);
-  }
-
-  va_end(args);
-  return neuralNetwork;
-}
-
 int main() {
 
-  Layer* neuralNetwork = createNeuralNetwork(
-    3, 
-    createLayer(1, 5, true),
-    createLayer(5, 10, false),
-    createLayer(10, 5, false)
-  );
+  float input[4][2] = {{0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}};
+  float expectedOutput[4] = {0.0f, 1.0f, 1.0f, 0.0f};
+  float** inputMatrix = malloc(sizeof(float*) * 4);
+  float** outputVector = malloc(sizeof(float*) * 4);
 
-  for(int i = 0; i < 5; i++) {
-    printf("%f\n", neuralNetwork[2].output[i]);
+  for(int i = 0; i < 4; i++) {
+    inputMatrix[i] = malloc(sizeof(float) * 2);
+    outputVector[i] = malloc(sizeof(float) * 1);
+    for(int j = 0; j < 2; j++) {
+      inputMatrix[i][j] = input[i][j];
+    }
+    for(int j = 0; j < 1; j++) {
+      outputVector[i][j] = expectedOutput[i];
+    }
   }
 
-  freeNN(3, neuralNetwork);
+
+  NeuralNetwork neuralNetwork = createNeuralNetwork(
+    3, 
+    createLayer(4, 2),
+    createLayer(2, 4),
+    createLayer(4, 1)
+  );
+
+  trainNeuralNetwork(neuralNetwork, 0.1, 10000, outputVector, inputMatrix);
+  float test1[2] = {0.0f, 0.0f};
+  float test2[2] = {0.0f, 1.0f};
+  float test3[2] = {1.0f, 0.0f};
+  float test4[2] = {1.0f, 1.0f};
+
+  testNeuralNetwork(neuralNetwork, test1);
+  printf("0,0: %f\n", neuralNetwork.layers[2].output[0]);
+
+  testNeuralNetwork(neuralNetwork, test2);
+  printf("0,1: %f\n", neuralNetwork.layers[2].output[0]);
+
+  testNeuralNetwork(neuralNetwork, test3);
+  printf("1,0: %f\n", neuralNetwork.layers[2].output[0]);
+
+  testNeuralNetwork(neuralNetwork, test4);
+  printf("1,1: %f\n", neuralNetwork.layers[2].output[0]);
+
+  // freeNN(neuralNetwork);
 }
