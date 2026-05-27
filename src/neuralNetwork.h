@@ -27,6 +27,6 @@ void comuteOutputDeltas(Layer* layer, float* expectedOutput);
 void computeHiddenDeltas(Layer* prevLayer, Layer* curLayer);
 void updateWeightsAndBias(Layer* prevLayer, Layer* curLayer, float learningRate);
 void trainNeuralNetwork(NeuralNetwork neuralNetwork, float learningRate, int epochs, float** expectedOutput, float** inputMatrix);
-void testNeuralNetwork(NeuralNetwork neuralNetwork, float* inputVector);
+void testNeuralNetwork(NeuralNetwork neuralNetwork, float* inputVector, float expectedOutput);
 void freeNN(NeuralNetwork neuralNetwork);
 NeuralNetwork createNeuralNetwork(int numLayers, ...);

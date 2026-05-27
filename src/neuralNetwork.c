@@ -31,12 +31,12 @@ Layer createLayer(int prevSize, int curSize) {
     // it skips the first array because there is no previous layer for the input layer.
     weightsArr[i] = (float*)malloc(sizeof(float) * prevSize);
 
-    biasArr[i] = 0;
+    biasArr[i] = ((float)rand() / RAND_MAX) * 2.0f - 1.0f;
 
     // For each neuron in the previous layer initialize
     // the ith pointer to a random number greater than 0
     for(int j = 0; j < prevSize; j++) {
-      weightsArr[i][j] = ((float)rand() / RAND_MAX) * 0.4f - 0.2f;
+      weightsArr[i][j] = ((float)rand() / RAND_MAX) * 2.0f - 1.0f;
     }
   }
 
@@ -65,46 +65,59 @@ void computeLayer(Layer* prevLayer, Layer* curLayer, float* inputVector) {
 
 void computeOutputDeltas(Layer* layer, float* expectedOutput) {
   for(int i = 0; i < layer->curSize; i++) {
+    // error is partial derivative of Cost function (MSE) with respect to activated output
     float error = expectedOutput[i] - layer->output[i];
+    // outputDeltas is error times derivative of activation function
     layer->deltas[i] = error * dsigmoidf(layer->output[i]);
   }
 }
 
 void computeHiddenDeltas(Layer* prevLayer, Layer* curLayer) {
-  for(int i = 0; i < curLayer->curSize; i++) {
+  for(int i = 0; i < prevLayer->curSize; i++) {
     float error = 0;
-    for(int j = 0; j < prevLayer->curSize; j++) {
-      error += (curLayer->weights[i][j] * curLayer->deltas[j]);
+    for(int j = 0; j < curLayer->curSize; j++) {
+      // error is the sum of each neuron weight times the delta
+      error += (curLayer->weights[j][i] * curLayer->deltas[j]);
     }
+    // prev layer deltas is the derivative of the activation function times error
     prevLayer->deltas[i] = dsigmoidf(prevLayer->output[i]) * error;
   }
 }
 
 void updateWeightsAndBias(Layer* prevLayer, Layer* curLayer, float learningRate) {
   for(int i = 0; i < curLayer->curSize; i++) {
+    // update the bias with the deltas times the learning rate
     curLayer->bias[i] += learningRate * curLayer->deltas[i];
+
+    // for each neuron in the previous layer update the weights of the current layer
+    // each neurons weight is the learning rate times the delta times the prev layer ouput
     for(int j = 0; j < prevLayer->curSize; j++) {
       curLayer->weights[i][j] += learningRate * curLayer->deltas[i] * prevLayer->output[j];
     }
   } 
 }
 
-void trainNeuralNetwork(NeuralNetwork neuralNetwork, float learningRate, int epochs, float** expectedOutput, float** inputMatrix) {
+void trainNeuralNetwork(NeuralNetwork neuralNetwork, float learningRate, int epochs, float** expectedOutputMatrix, float** inputMatrix) {
+  // run this sequnece for each epoch
   for(int epoch = 0; epoch < epochs; epoch++) {
-
+    // for each sample provided
     for(int sample = 0; sample < neuralNetwork.layers[0].prevSize; sample++) {
       float* inputVector = inputMatrix[sample];
-
+      
+      // compute each layer of the neural network
       for(int i = 1; i < neuralNetwork.numLayers; i++) {
         computeLayer(&neuralNetwork.layers[i - 1], &neuralNetwork.layers[i], inputVector);
       }
       
-      computeOutputDeltas(&neuralNetwork.layers[neuralNetwork.numLayers - 1], expectedOutput[sample]);
-
-      for(int i = neuralNetwork.numLayers - 2; i > 0 ; i--) {
-        computeHiddenDeltas(&neuralNetwork.layers[i], &neuralNetwork.layers[i - 1]);
+      // then compute the output deltas
+      computeOutputDeltas(&neuralNetwork.layers[neuralNetwork.numLayers - 1], expectedOutputMatrix[sample]);
+      
+      // then compute the deltas of the hidden layers
+      for(int i = neuralNetwork.numLayers - 1; i > 1 ; i--) {
+        computeHiddenDeltas(&neuralNetwork.layers[i - 1], &neuralNetwork.layers[i]);
       }
 
+      // update the weights and biases of each neuron
       for(int i = 1; i < neuralNetwork.numLayers; i++) {
         updateWeightsAndBias(&neuralNetwork.layers[i - 1], &neuralNetwork.layers[i], learningRate);
       }
@@ -112,10 +125,16 @@ void trainNeuralNetwork(NeuralNetwork neuralNetwork, float learningRate, int epo
   }
 }
 
-void testNeuralNetwork(NeuralNetwork neuralNetwork, float* inputVector) {
+void testNeuralNetwork(NeuralNetwork neuralNetwork, float* inputVector, float expectedOutput) {
   for(int i = 1; i < neuralNetwork.numLayers; i++) {
     computeLayer(&neuralNetwork.layers[i - 1], &neuralNetwork.layers[i], inputVector);
   }
+  for(int i = 0; i < 2; i++) {
+    printf("%.2f, ", inputVector[i]);
+  }
+  printf("%f", neuralNetwork.layers[neuralNetwork.numLayers - 1].output[0]);
+  printf("\n");
+  printf("Error: %f\n", powf((neuralNetwork.layers[neuralNetwork.numLayers - 1].output[0] - expectedOutput), 2));
 
 }
 
@@ -126,7 +145,9 @@ void freeNN(NeuralNetwork neuralNetwork) {
     }
     free(neuralNetwork.layers[i].weights);
     free(neuralNetwork.layers[i].bias);
-    free(neuralNetwork.layers[i].output);
+    if (!neuralNetwork.layers[i].inputLayer) {
+      free(neuralNetwork.layers[i].output);
+    }
     free(neuralNetwork.layers[i].deltas);
   }
   free(neuralNetwork.layers);
