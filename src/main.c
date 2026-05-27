@@ -23,7 +23,9 @@ int main() {
     3,
     // input layer prev size is the number of samples
     createLayer(4, 2),
-    createLayer(2, 4),
+    createLayer(2, 8),
+    createLayer(8, 4),
+    // ouput layer cur size is 1 becuase output is binary
     createLayer(4, 1)
   );
 

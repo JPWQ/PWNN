@@ -129,10 +129,11 @@ void testNeuralNetwork(NeuralNetwork neuralNetwork, float* inputVector, float ex
   for(int i = 1; i < neuralNetwork.numLayers; i++) {
     computeLayer(&neuralNetwork.layers[i - 1], &neuralNetwork.layers[i], inputVector);
   }
+  printf("Input: ");
   for(int i = 0; i < 2; i++) {
     printf("%.2f, ", inputVector[i]);
   }
-  printf("%f", neuralNetwork.layers[neuralNetwork.numLayers - 1].output[0]);
+  printf("Predicted Output: %f", neuralNetwork.layers[neuralNetwork.numLayers - 1].output[0]);
   printf("\n");
   printf("Error: %f\n", powf((neuralNetwork.layers[neuralNetwork.numLayers - 1].output[0] - expectedOutput), 2));
 
