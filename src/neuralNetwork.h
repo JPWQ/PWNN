@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdarg.h>
+#include <time.h>
 #include "matrix.h"
+#include "utils.h"
 
 // Each layer keeps track of how many neurons it has and an array of Neurons
 typedef struct layer_t {
@@ -11,6 +13,8 @@ typedef struct layer_t {
   float* deltas;
   int curSize;
   int prevSize;
+  float (*activationFunc)(float);
+  float (*derivativeActFunc)(float);
   bool inputLayer;
   bool hiddenLayer;
   bool outputLayer;
@@ -21,7 +25,7 @@ typedef struct neuralNetwork_t {
   int numLayers;
 } NeuralNetwork;
 
-Layer createLayer(int curSize, int nextSize);
+Layer createLayer(int curSize, int nextSize, char* activation);
 void computeLayer(Layer* prevLayer, Layer* curLayer, float* inputVector);
 void comuteOutputDeltas(Layer* layer, float* expectedOutput);
 void computeHiddenDeltas(Layer* prevLayer, Layer* curLayer);

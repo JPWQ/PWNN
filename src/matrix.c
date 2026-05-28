@@ -12,8 +12,24 @@ float sigmoidf(float n) {
   return (1.0f / (1.0f + exp(-n)));
 }
 
+float reluf(float n) {
+  return n <= 0 ? 0 : n;
+}
+
+float softmaxf(float n) {
+  return n;
+}
+
 float dsigmoidf(float n) {
   return (n * (1.0f - n));
+}
+
+float dreluf(float n) {
+  return n <= 0 ? 0 : 1;
+}
+
+float dsoftmaxf(float n) {
+  return n;
 }
 
 float* matrixMult(float** weightsMatrix, float* inputVector, int rows, int cols) {

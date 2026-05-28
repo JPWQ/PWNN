@@ -1,6 +1,7 @@
 #include "neuralNetwork.h"
 
-Layer createLayer(int prevSize, int curSize) {
+Layer createLayer(int prevSize, int curSize, char* activation) {
+  srand(time(NULL));
   // float weightsArr[curSize][prevSize];
 
   // The weights 2d array takes n float pointers where n is the number of neurons in the next/current layer.
@@ -18,7 +19,37 @@ Layer createLayer(int prevSize, int curSize) {
   // Output array is a column vector
   float* outputArr = malloc(sizeof(float) * curSize);
   
+  // Initialzie array for deltas used in backpropagation
   float* deltaArr = malloc(sizeof(float) * curSize);
+
+  // Initialize the activation function
+  float (*activationFunc)(float) = reluf;
+  if (stringCmp(activation, "relu")) {
+    activationFunc = reluf;
+  }
+  else if (stringCmp(activation, "sigmoid")) {
+    activationFunc = sigmoidf;
+  }
+  else if (stringCmp(activation, "softmax")) {
+    activationFunc = softmaxf;
+  }
+  else {
+    printf("Error: Invalid Activation Function. Defaulting to Relu\n");
+  }
+
+  float (*derivativeActFunc)(float) = dreluf;
+  if (activationFunc == reluf) {
+    derivativeActFunc = dreluf;
+  }
+  else if (activationFunc == sigmoidf) {
+    derivativeActFunc = dsigmoidf;
+  }
+  else if (activationFunc == softmaxf) {
+    derivativeActFunc = dsoftmaxf;
+  }
+  else {
+    printf("Error: Default Derivatvie Activation Function Relu\n");
+  }
 
   // For each neuron in the next/current layer initialize
   // each element of output array is a random number greater than 0 if the curLayer is not an input layer
@@ -40,7 +71,8 @@ Layer createLayer(int prevSize, int curSize) {
     }
   }
 
-  Layer newLayer = {weightsArr, biasArr, outputArr, deltaArr, curSize, prevSize};
+  Layer newLayer = {weightsArr, biasArr, outputArr, deltaArr, curSize, prevSize, activationFunc, derivativeActFunc};
+  printf("Act: %p, dAct: %p, sig: %p, dsig: %p\n", newLayer.activationFunc, newLayer.derivativeActFunc, sigmoidf, dsigmoidf);
   return newLayer;
 }
 
@@ -58,7 +90,7 @@ void computeLayer(Layer* prevLayer, Layer* curLayer, float* inputVector) {
   float* result = matrixMult(curLayer->weights, prevLayer->output, curLayer->curSize, prevLayer->curSize);
   for(int i = 0; i < curLayer->curSize; i++) {
     result[i] += curLayer->bias[i];
-    result[i] = sigmoidf(result[i]);
+    result[i] = curLayer->activationFunc(result[i]);
   }
   curLayer->output = result;
 }
@@ -68,7 +100,7 @@ void computeOutputDeltas(Layer* layer, float* expectedOutput) {
     // error is partial derivative of Cost function (MSE) with respect to activated output
     float error = expectedOutput[i] - layer->output[i];
     // outputDeltas is error times derivative of activation function
-    layer->deltas[i] = error * dsigmoidf(layer->output[i]);
+    layer->deltas[i] = error * layer->derivativeActFunc(layer->output[i]);
   }
 }
 
@@ -80,7 +112,7 @@ void computeHiddenDeltas(Layer* prevLayer, Layer* curLayer) {
       error += (curLayer->weights[j][i] * curLayer->deltas[j]);
     }
     // prev layer deltas is the derivative of the activation function times error
-    prevLayer->deltas[i] = dsigmoidf(prevLayer->output[i]) * error;
+    prevLayer->deltas[i] = prevLayer->activationFunc(prevLayer->output[i]) * error;
   }
 }
 

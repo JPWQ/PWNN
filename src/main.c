@@ -22,11 +22,11 @@ int main() {
   NeuralNetwork neuralNetwork = createNeuralNetwork(
     3,
     // input layer prev size is the number of samples
-    createLayer(4, 2),
-    createLayer(2, 8),
-    createLayer(8, 4),
+    createLayer(4, 2, "sigmoid"),
+    createLayer(2, 4, "sigmoid"),
+    // createLayer(8, 4, "sigmoid"),
     // ouput layer cur size is 1 becuase output is binary
-    createLayer(4, 1)
+    createLayer(4, 1, "sigmoid")
   );
 
   trainNeuralNetwork(neuralNetwork, 0.1, 100000, outputVector, inputMatrix);
