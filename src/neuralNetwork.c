@@ -67,7 +67,7 @@ Layer createLayer(int prevSize, int curSize, char* activation) {
     // For each neuron in the previous layer initialize
     // the ith pointer to a random number greater than 0
     for(int j = 0; j < prevSize; j++) {
-      weightsArr[i][j] = ((float)rand() / RAND_MAX) * 2.0f - 1.0f;
+      weightsArr[i][j] = ((float)rand() / RAND_MAX) * 1.0f - 0.5f;
     }
   }
 
@@ -112,7 +112,7 @@ void computeHiddenDeltas(Layer* prevLayer, Layer* curLayer) {
       error += (curLayer->weights[j][i] * curLayer->deltas[j]);
     }
     // prev layer deltas is the derivative of the activation function times error
-    prevLayer->deltas[i] = prevLayer->activationFunc(prevLayer->output[i]) * error;
+    prevLayer->deltas[i] = prevLayer->derivativeActFunc(prevLayer->output[i]) * error;
   }
 }
 

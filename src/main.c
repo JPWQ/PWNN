@@ -24,12 +24,11 @@ int main() {
     // input layer prev size is the number of samples
     createLayer(4, 2, "sigmoid"),
     createLayer(2, 4, "sigmoid"),
-    // createLayer(8, 4, "sigmoid"),
     // ouput layer cur size is 1 becuase output is binary
     createLayer(4, 1, "sigmoid")
   );
 
-  trainNeuralNetwork(neuralNetwork, 0.1, 100000, outputVector, inputMatrix);
+  trainNeuralNetwork(neuralNetwork, 0.1, 1000000, outputVector, inputMatrix);
   float test1[2] = {0.0f, 0.0f};
   float test2[2] = {0.0f, 1.0f};
   float test3[2] = {1.0f, 0.0f};
@@ -44,4 +43,47 @@ int main() {
   testNeuralNetwork(neuralNetwork, test4, *outputVector[3]);
 
   freeNN(neuralNetwork);
+  printf("\n");
+
+  float** MNISTInputMatrix = malloc(sizeof(float*) * 60000);
+  float** MNISTLabels = malloc(sizeof(float*) * 60000);
+
+  // FILE* train = fopen("~/Downloads/mnist_train.csv", "r");
+  // char line[8192];
+  // fgets(line, sizeof(line), train);
+  // int count = 0;
+  // while (fgets(line, sizeof(line), train)) {
+  //   char* token = strtok(line, ",");
+  //   int label = atoi(token);
+  //   
+  //   MNISTInputMatrix[count] = malloc(sizeof(float) * 784);
+  //   MNISTLabels[count] = malloc(sizeof(float) * 10);
+  //
+  //   for (int i = 0; i < 784; i++) {
+  //     token = strtok(NULL, ",");
+  //     MNISTInputMatrix[count][i] = atof(token) / 255.0f;
+  //   }
+  //
+  //   for (int i = 0; i < 10; i++) {
+  //     MNISTLabels[count][i] = 0.0f;
+  //   }
+  //   MNISTLabels[count][label] = 1.0f;
+  //
+  //   count++;
+  // }
+  // fclose(train);
+
+  // NeuralNetwork neuralNetwork1 = createNeuralNetwork(
+  //   3,
+  //   // input layer prev size is the number of samples
+  //   createLayer(60000, 784, "relu"),
+  //   createLayer(784, 128, "relu"),
+  //   // ouput layer cur size is 1 becuase output is binary
+  //   createLayer(128, 10, "sigmoid")
+  // );
+  //
+  // trainNeuralNetwork(neuralNetwork1, 0.1, 100000, MNISTLabels, MNISTInputMatrix);
+  //
 }
+
+
