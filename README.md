@@ -1,1 +1,1 @@
-A simple Dense Deep Learning implication in C.
+A simple Dense Deep Learning implementation in C.
